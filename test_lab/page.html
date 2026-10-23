@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClipForge Test Lab</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --panel2: #f0f2f5; --line: #e2e5ea; --text: #16191d; --muted: #646b75;
+  --accent: #5b5bd6; --accent-soft: #ececfb; --pass: #1f9d55; --pass-soft: #e5f6ec; --warn: #b7791f; --warn-soft: #fdf3e1;
+  --fail: #d64545; --fail-soft: #fdeaea; --info: #3d7dd8; --info-soft: #e7f0fc;
+  --c1: #5b5bd6; --c2: #1aa39a; --c3: #e07b39; --c4: #c2418f; --grid: #e8eaee;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1115; --panel: #171a20; --panel2: #1e222a; --line: #2a2f39; --text: #e7e9ee; --muted: #9aa2ae;
+  --accent: #8b8bf0; --accent-soft: #23243d; --pass: #3fcf7f; --pass-soft: #15301f; --warn: #e6b14a; --warn-soft: #33290f;
+  --fail: #f07070; --fail-soft: #3a1717; --info: #6aa5f5; --info-soft: #162538;
+  --c1: #8b8bf0; --c2: #3cc9bf; --c3: #f09a5c; --c4: #e070b3; --grid: #232731;
+}}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --panel: #171a20; --panel2: #1e222a; --line: #2a2f39; --text: #e7e9ee; --muted: #9aa2ae;
+  --accent: #8b8bf0; --accent-soft: #23243d; --pass: #3fcf7f; --pass-soft: #15301f; --warn: #e6b14a; --warn-soft: #33290f;
+  --fail: #f07070; --fail-soft: #3a1717; --info: #6aa5f5; --info-soft: #162538;
+  --c1: #8b8bf0; --c2: #3cc9bf; --c3: #f09a5c; --c4: #e070b3; --grid: #232731;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+a { color: var(--accent); }
+button, select, input { font: inherit; color: inherit; }
+.btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+.btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: progress; }
+.app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+aside { border-right: 1px solid var(--line); background: var(--panel); padding: 16px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+main { padding: 20px 28px 60px; min-width: 0; }
+h1 { font-size: 17px; margin: 0 0 2px; }
+h2 { font-size: 22px; margin: 0 0 4px; }
+h3 { font-size: 15px; margin: 22px 0 8px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; transition: .15s; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+input[type=text] { width: 100%; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+select { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+.bar { height: 6px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+.bar > div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+.nav a { display: flex; gap: 10px; align-items: center; padding: 7px 8px; border-radius: 8px; color: var(--text); text-decoration: none; }
+.nav a:hover { background: var(--panel2); }
+.nav a.active { background: var(--accent-soft); }
+.num { font: 600 11px var(--mono); color: var(--muted); width: 18px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); flex: none; margin-left: auto; }
+.dot.pass { background: var(--pass); } .dot.warn { background: var(--warn); } .dot.fail { background: var(--fail); }
+.dot.running { background: var(--accent); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+.pill { display: inline-block; font: 600 11px var(--mono); padding: 2px 7px; border-radius: 99px; text-transform: uppercase; white-space: nowrap; }
+.pill.pass, .pill.passed { background: var(--pass-soft); color: var(--pass); }
+.pill.warn, .pill.skipped { background: var(--warn-soft); color: var(--warn); }
+.pill.fail, .pill.failed, .pill.error { background: var(--fail-soft); color: var(--fail); }
+.pill.info { background: var(--info-soft); color: var(--info); }
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.checks td:first-child { width: 70px; }
+.detail { font: 12px var(--mono); color: var(--muted); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; }
+pre, code { font: 12px/1.5 var(--mono); }
+pre { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow: auto; max-height: 360px; margin: 6px 0; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.sticky { position: sticky; top: 12px; }
+video { width: 100%; border-radius: 10px; background: #000; max-height: 420px; }
+canvas.chart { width: 100%; display: block; cursor: crosshair; }
+.chartbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 4px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.thumbs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; }
+.thumbs img { height: 72px; border-radius: 4px; cursor: pointer; }
+.words { line-height: 2; max-height: 360px; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.words span { cursor: pointer; padding: 1px 2px; border-radius: 4px; }
+.words span.now { background: var(--accent); color: #fff; }
+.words span.low { text-decoration: underline dotted var(--warn); }
+.cand { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--panel); margin-bottom: 10px; }
+.score { font: 700 22px var(--mono); color: var(--accent); }
+.comp { display: grid; grid-template-columns: 80px 1fr 44px; gap: 6px; align-items: center; font-size: 12px; }
+.comp .bar { height: 8px; }
+.timeline { position: relative; height: 34px; background: var(--panel2); border-radius: 6px; margin: 8px 0 14px; }
+.timeline div { position: absolute; top: 4px; bottom: 4px; border-radius: 4px; background: var(--accent); opacity: .75; cursor: pointer; color: #fff; font: 600 11px var(--mono); padding: 4px; overflow: hidden; }
+.chunks { display: flex; height: 36px; border-radius: 6px; overflow: hidden; gap: 2px; }
+.chunks div { background: var(--accent-soft); color: var(--accent); font: 600 11px var(--mono); display: flex; align-items: center; justify-content: center; }
+.renders { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.renders video { aspect-ratio: 9/16; max-height: 520px; object-fit: contain; }
+.frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.frames figure { margin: 0; } .frames img { width: 100%; border-radius: 6px; cursor: pointer; display: block; }
+.frames figcaption { font: 11px var(--mono); color: var(--muted); }
+.feed { max-height: 340px; overflow: auto; font-size: 13px; }
+.feed div { padding: 2px 0; cursor: pointer; } .feed b { font-weight: 600; color: var(--c2); }
+.banner { padding: 10px 12px; border-radius: 8px; margin: 10px 0; }
+.banner.warn { background: var(--warn-soft); color: var(--warn); } .banner.fail { background: var(--fail-soft); color: var(--fail); }
+.banner.info { background: var(--info-soft); color: var(--info); }
+details.test { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); margin-bottom: 8px; }
+details.test summary { padding: 10px 12px; cursor: pointer; display: flex; gap: 10px; align-items: center; }
+details.test > div { padding: 0 14px 12px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 16px 0 14px; }
+.tabs button { background: none; border: 0; padding: 8px 12px; border-bottom: 2px solid transparent; cursor: pointer; color: var(--muted); font-weight: 600; }
+.tabs button.on { color: var(--text); border-color: var(--accent); }
+.kv td:first-child { color: var(--muted); width: 150px; }
+.recent { max-height: 210px; overflow: auto; margin-top: 6px; }
+.recent div { padding: 5px 6px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.recent div:hover { background: var(--panel2); }
+.status-line { font: 12px var(--mono); color: var(--accent); min-height: 18px; margin: 8px 0; }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; } aside { position: static; height: auto; }
+  main { padding: 16px; } .split { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>ClipForge Test Lab</h1>
+    <div class="muted small" style="margin-bottom:14px">Visual tests for every module on your own video</div>
+    <div id="loader">
+      <div class="card" style="padding:12px">
+        <div class="drop" id="drop">
+          <b>Drop a video here</b><br><span class="muted small">or click to pick one from your laptop</span>
+          <input type="file" id="file" accept="video/*,.mkv,.mov,.ts,.flv" hidden>
+        </div>
+        <div class="bar" id="upbar" style="margin-top:8px;display:none"><div></div></div>
+        <div class="small muted" style="margin:10px 0 4px">…or paste a path (no upload, works for huge files)</div>
+        <div class="row" style="flex-wrap:nowrap"><input type="text" id="pathIn" placeholder="~/Movies/stream.mp4"><button class="btn secondary" id="pathBtn">Use</button></div>
+        <details style="margin-top:8px"><summary class="small muted" style="cursor:pointer">Videos found on this laptop</summary><div class="recent" id="recent"></div></details>
+      </div>
+      <div class="card" id="current" style="margin-top:10px;display:none"></div>
+    </div>
+    <nav class="nav" id="nav" style="margin-top:14px"></nav>
+  </aside>
+  <main id="main"></main>
+</div>
+<script>/*__STATIC__*/</script>
+<script>
+const STATIC = window.LAB_STATIC || null;
+let MODULES = {}, SESSION = null, PRESETS = [], PRESET = "GAMING";
+const RESULTS = {}, TESTS = {}, RUNNING = new Set();
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60); return `${m}:${(t - m * 60).toFixed(1).padStart(4, "0")}`; };
+const fileUrl = rel => STATIC ? rel : `/files/${SESSION.run_id}/${rel}`;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, opts);
+  if (!r.ok) { let d; try { d = (await r.json()).detail; } catch { d = r.statusText; } throw new Error(d); }
+  return r.json();
+}
+
+// ---------------------------------------------------------------- boot / loader
+async function boot() {
+  if (STATIC) {
+    MODULES = STATIC.modules; SESSION = STATIC.session; Object.assign(RESULTS, STATIC.results); Object.assign(TESTS, STATIC.tests || {});
+    $("#loader").style.display = "none";
+  } else {
+    const st = await api("/api/state");
+    MODULES = st.modules; SESSION = st.session; PRESETS = st.presets; PRESET = st.preset;
+    Object.assign(RESULTS, SESSION?.results || {});
+    setupLoader(); loadRecent();
+  }
+  renderCurrent(); renderNav(); route();
+}
+window.addEventListener("hashchange", route);
+
+function setupLoader() {
+  const drop = $("#drop"), file = $("#file");
+  drop.onclick = () => file.click();
+  file.onchange = () => file.files[0] && upload(file.files[0]);
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); e.dataTransfer.files[0] && upload(e.dataTransfer.files[0]); };
+  $("#pathBtn").onclick = () => usePath($("#pathIn").value);
+  $("#pathIn").onkeydown = e => e.key === "Enter" && usePath($("#pathIn").value);
+}
+function upload(f) {
+  const bar = $("#upbar"); bar.style.display = "block";
+  const xhr = new XMLHttpRequest(); const fd = new FormData(); fd.append("file", f);
+  xhr.upload.onprogress = e => { bar.firstElementChild.style.width = (100 * e.loaded / e.total) + "%"; };
+  xhr.onload = () => { bar.style.display = "none";
+    if (xhr.status === 200) newSession(JSON.parse(xhr.responseText)); else alert("Upload failed: " + xhr.responseText); };
+  xhr.onerror = () => { bar.style.display = "none"; alert("Upload failed"); };
+  xhr.open("POST", "/api/upload"); xhr.send(fd);
+}
+async function usePath(p) {
+  if (!p.trim()) return;
+  try { newSession(await api("/api/use-path", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: p})})); }
+  catch (e) { alert(e.message); }
+}
+async function loadRecent() {
+  const list = await api("/api/recent");
+  $("#recent").innerHTML = list.length ? list.map(v => `<div data-p="${esc(v.path)}"><b>${esc(v.name)}</b> <span class="muted">${v.mb} MB · ${esc(v.dir)}</span></div>`).join("")
+    : `<div class="muted">None found in Movies/Downloads/Desktop.</div>`;
+  $("#recent").querySelectorAll("[data-p]").forEach(d => d.onclick = () => usePath(d.dataset.p));
+}
+function newSession(info) {
+  SESSION = info; for (const k in RESULTS) delete RESULTS[k];
+  Object.entries(info.results || {}).forEach(([n, r]) => RESULTS[n] = r);
+  renderCurrent(); renderNav(); route();
+}
+function renderCurrent() {
+  const el = $("#current"); if (!SESSION) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.innerHTML = `<div class="small muted">Video under test</div><div style="font-weight:600;word-break:break-all">${esc(SESSION.video_name)}</div>
+    <div class="small muted">${SESSION.size_mb} MB</div>
+    ${STATIC ? "" : `<div class="small muted" style="margin-top:8px">Chat log (optional, for Module 5)</div>
+    <div class="row"><input type="file" id="chatFile" accept=".txt,.json,.log" class="small" style="max-width:100%">
+    ${SESSION.chat_path ? `<span class="pill info">using ${esc(SESSION.chat_path.split("/").pop())}</span>` : `<span class="small muted">none → simulated</span>`}</div>
+    <div class="small muted" style="margin-top:10px">What's this video about? Names &amp; terms (improves captions)</div>
+    <textarea id="ctxIn" rows="3" placeholder="e.g. Campus energy-saving promo. Names: Joraan, EcoSense. Terms: AC, motion sensors, hostels" style="width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:12px inherit;color:inherit;resize:vertical">${esc(SESSION.context || "")}</textarea>
+    <button class="btn secondary small" id="ctxBtn" style="margin-top:4px;padding:4px 10px">Save context</button>`}`;
+  const cb = $("#ctxBtn");
+  if (cb) cb.onclick = async () => {
+    SESSION = await api("/api/context", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({context: $("#ctxIn").value})});
+    [3, 7, 8, 10].forEach(n => delete RESULTS[n]); renderCurrent(); renderNav(); route();
+    cb.textContent = "Saved — re-run Module 3"; };
+  const cf = $("#chatFile");
+  if (cf) cf.onchange = async () => { const fd = new FormData(); fd.append("file", cf.files[0]);
+    SESSION = await api("/api/chat", {method: "POST", body: fd}); [5, 7, 8, 10].forEach(n => delete RESULTS[n]); renderCurrent(); renderNav(); route(); };
+}
+function renderNav() {
+  $("#nav").innerHTML = `<a href="#/" class="${location.hash.length < 3 ? "active" : ""}"><span class="num">≡</span>Overview</a>` +
+    Object.entries(MODULES).map(([n, m]) => {
+      const st = RUNNING.has(+n) ? "running" : (RESULTS[n]?.status || "");
+      return `<a href="#/module/${n}" class="${location.hash === "#/module/" + n ? "active" : ""}"><span class="num">${String(n).padStart(2, "0")}</span>${esc(m.title)}<span class="dot ${st}"></span></a>`;
+    }).join("");
+}
+function route() {
+  renderNav();
+  const m = location.hash.match(/#\/module\/(\d+)/);
+  m ? renderModule(+m[1]) : renderOverview();
+}
+
+// ---------------------------------------------------------------- running
+let progressTimer = null;
+function startProgress(el) {
+  const t0 = Date.now();
+  progressTimer = setInterval(async () => {
+    let p = ""; try { p = (await api("/api/progress")).progress; } catch {}
+    el.textContent = `⏳ ${((Date.now() - t0) / 1000).toFixed(0)}s  ${p}`;
+  }, 700);
+}
+function stopProgress(el) { clearInterval(progressTimer); if (el) el.textContent = ""; }
+async function runModule(n) {
+  if (!SESSION) return alert("Load a video first (left panel).");
+  RUNNING.add(n); renderNav();
+  try { const r = await api(`/api/run/${n}`, {method: "POST"}); RESULTS[n] = r; }
+  catch (e) { RESULTS[n] = {status: "fail", checks: [{name: "Request failed", what: "", status: "fail", detail: e.message}], visuals: {}, counts: {fail: 1}}; }
+  finally { RUNNING.delete(n); renderNav(); }
+  if (!SESSION.proxy && RESULTS[n]?.visuals?.proxy) SESSION.proxy = RESULTS[n].visuals.proxy;
+  return RESULTS[n];
+}
+async function runTests(n) {
+  try { TESTS[n] = await api(`/api/pytest/${n}`, {method: "POST"}); } catch (e) { TESTS[n] = {error: e.message, tests: []}; }
+  return TESTS[n];
+}
+
+// ---------------------------------------------------------------- overview
+function renderOverview() {
+  const main = $("#main");
+  main.innerHTML = `<h2>Overview</h2>
+    <p class="muted" style="max-width:760px">Each module page runs that module on <b>your video</b> and shows what it found, plus the module's unit tests explained line-by-line.
+    ${SESSION ? "" : "<b>Start by loading a video on the left.</b>"} Later modules reuse earlier results, so the first run of a module may also run its prerequisites (proxy, transcript…).</p>
+    ${STATIC ? "" : `<div class="row" style="margin:14px 0"><button class="btn" id="allBtn" ${SESSION ? "" : "disabled"}>▶ Analyse my video with all 10 modules</button>
+    <button class="btn secondary" id="allTests">🧪 Run all unit tests</button></div><div class="status-line" id="ovStatus"></div>`}
+    <div class="grid" id="ovGrid"></div>
+    ${STATIC ? "" : `<h3>Setup status</h3><div class="small muted" style="margin:-4px 0 8px">What is configured on this machine. Keys go in <code>.env</code> at the project root (see SETUP.md); refresh this page after editing it.</div><div class="card" style="padding:0;overflow:auto" id="setup">loading…</div>`}`;
+  if (!STATIC) api("/api/setup").then(rows => { $("#setup").innerHTML = `<table><tr><th>Status</th><th>Item</th><th>What it unlocks</th><th>How to fix</th></tr>${rows.map(r =>
+    `<tr><td><span class="pill ${r.status === "ok" ? "pass" : r.status === "missing" ? "fail" : "warn"}">${r.status}</span></td><td><b>${esc(r.name)}</b></td><td class="small">${esc(r.unlocks)}</td><td class="small muted">${esc(r.fix)}</td></tr>`).join("")}</table>`; });
+  const grid = () => $("#ovGrid").innerHTML = Object.entries(MODULES).map(([n, m]) => {
+    const r = RESULTS[n], t = TESTS[n];
+    return `<a class="card" href="#/module/${n}" style="text-decoration:none;color:inherit">
+      <div class="row" style="flex-wrap:nowrap"><span class="num">${String(n).padStart(2, "0")}</span><b>${esc(m.title)}</b><span class="dot ${RUNNING.has(+n) ? "running" : r?.status || ""}"></span></div>
+      <div class="small muted" style="margin:6px 0">${esc(m.blurb)}</div>
+      <div class="row small">${r ? ["pass", "warn", "fail"].map(s => r.counts?.[s] ? `<span class="pill ${s}">${r.counts[s]} ${s}</span>` : "").join("") + ` <span class="muted">${r.elapsed_s ?? ""}s</span>` : `<span class="muted">not run on video</span>`}</div>
+      <div class="row small" style="margin-top:4px">${t ? `<span class="pill ${t.passed === t.total ? "pass" : "fail"}">unit ${t.passed}/${t.total}</span>` : ""}</div></a>`;
+  }).join("");
+  grid();
+  if (STATIC) return;
+  $("#allBtn").onclick = async e => {
+    e.target.disabled = true; const st = $("#ovStatus"); startProgress(st);
+    for (const n of Object.keys(MODULES).map(Number)) { RUNNING.add(n); grid(); await runModule(n); grid(); }
+    stopProgress(st); e.target.disabled = false;
+  };
+  $("#allTests").onclick = async e => {
+    e.target.disabled = true;
+    for (const n of Object.keys(MODULES).map(Number)) { $("#ovStatus").textContent = `🧪 running unit tests for module ${n}…`; await runTests(n); grid(); }
+    $("#ovStatus").textContent = ""; e.target.disabled = false;
+  };
+}
+
+// ---------------------------------------------------------------- module page
+let TAB = "video";
+function renderModule(n) {
+  const m = MODULES[n]; const main = $("#main");
+  main.innerHTML = `<div class="muted small">MODULE ${String(n).padStart(2, "0")} · modules/${esc(m.folder)}</div><h2>${esc(m.title)}</h2>
+    <div class="muted" style="max-width:760px">${esc(m.blurb)}</div>
+    ${STATIC ? "" : `<div class="row" style="margin-top:14px">
+      <button class="btn" id="runBtn">▶ Analyse my video</button>
+      <button class="btn secondary" id="testBtn">🧪 Run unit tests</button>
+      ${[7, 8, 10].includes(n) ? `<label class="small muted">Niche preset <select id="preset">${PRESETS.map(p => `<option ${p === PRESET ? "selected" : ""}>${p}</option>`).join("")}</select></label>` : ""}
+    </div>`}
+    <div class="status-line" id="status"></div>
+    <div class="tabs"><button data-t="video">On your video</button><button data-t="tests">Unit tests</button></div>
+    <div id="tabBody"></div>`;
+  main.querySelectorAll(".tabs button").forEach(b => { b.classList.toggle("on", b.dataset.t === TAB); b.onclick = () => { TAB = b.dataset.t; renderModule(n); }; });
+  const body = $("#tabBody");
+  TAB === "video" ? renderResult(n, body) : renderTests(n, body);
+  if (STATIC) return;
+  $("#runBtn").onclick = async e => {
+    e.target.disabled = true; TAB = "video"; const st = $("#status"); startProgress(st);
+    await runModule(n); stopProgress(st);
+    if (location.hash === `#/module/${n}`) renderModule(n);
+  };
+  $("#testBtn").onclick = async e => {
+    e.target.disabled = true; TAB = "tests"; $("#status").textContent = "🧪 running pytest…";
+    await runTests(n); if (location.hash === `#/module/${n}`) renderModule(n);
+  };
+  const ps = $("#preset");
+  if (ps) ps.onchange = async () => { PRESET = ps.value; await api("/api/preset", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({preset: PRESET})}); [7, 8, 10].forEach(k => delete RESULTS[k]); renderNav(); renderModule(n); };
+}
+
+function renderResult(n, body) {
+  const r = RESULTS[n];
+  if (!r || !r.checks) {
+    body.innerHTML = SESSION ? `<div class="banner info">Not run yet on <b>${esc(SESSION.video_name)}</b>. Press <b>▶ Analyse my video</b>.</div>`
+      : `<div class="banner info">Load a video from your laptop on the left first.</div>`;
+    return;
+  }
+  const c = r.counts || {};
+  body.innerHTML = `<div class="row" style="margin-bottom:10px">${["pass", "warn", "fail", "info"].map(s => c[s] ? `<span class="pill ${s}">${c[s]} ${s}</span>` : "").join(" ")}
+      <span class="muted small">in ${r.elapsed_s}s on ${esc(SESSION?.video_name || "")}</span></div>
+    <div class="card" style="padding:0;overflow:auto"><table class="checks"><tr><th>Result</th><th>Check — what it verifies</th><th>Measured on your video</th></tr>
+    ${r.checks.map(ch => `<tr><td><span class="pill ${ch.status}">${ch.status}</span></td>
+      <td><b>${esc(ch.name)}</b><div class="small muted">${esc(ch.what)}</div></td><td><div class="detail">${esc(ch.detail)}</div></td></tr>`).join("")}</table></div>
+    <h3>What the module saw</h3><div id="vis"></div>
+    <details style="margin-top:16px"><summary class="small muted" style="cursor:pointer">Raw JSON</summary><pre>${esc(JSON.stringify(r.visuals, null, 1).slice(0, 60000))}</pre></details>`;
+  try { (VIS[n] || (() => {}))(r.visuals || {}, $("#vis")); } catch (e) { $("#vis").innerHTML = `<div class="banner fail">Visual failed: ${esc(e.message)}</div>`; }
+}
+
+function renderTests(n, body) {
+  const t = TESTS[n];
+  if (!t) { body.innerHTML = `<div class="banner info">These are the module's pytest unit tests (synthetic fixtures, fast). Press <b>🧪 Run unit tests</b> to run them and see what each one checks.</div>`; return; }
+  if (t.error) { body.innerHTML = `<div class="banner fail">${esc(t.error)}</div>`; return; }
+  const human = s => s.replace(/^test_/, "").replace(/_/g, " ");
+  body.innerHTML = `<div class="row" style="margin-bottom:10px"><span class="pill ${t.passed === t.total ? "pass" : "fail"}">${t.passed}/${t.total} passed</span><span class="muted small">pytest in ${t.elapsed_s}s</span></div>
+    ${t.tests.map(tc => `<details class="test" ${tc.status !== "passed" ? "open" : ""}><summary><span class="pill ${tc.status}">${tc.status}</span>
+      <b>${esc(human(tc.name))}</b><span class="muted small" style="margin-left:auto">${tc.time.toFixed(2)}s</span></summary><div>
+      ${tc.doc ? `<p>${esc(tc.doc)}</p>` : ""}
+      ${tc.asserts?.length ? `<div class="small muted">What it checks (${tc.asserts.length} assertions):</div><pre>${tc.asserts.map(esc).join("\n")}</pre>` : ""}
+      ${tc.raises?.length ? `<div class="small muted">Must raise:</div><pre>${tc.raises.map(esc).join("\n")}</pre>` : ""}
+      ${tc.message ? `<div class="small muted">Failure:</div><pre style="color:var(--fail)">${esc(tc.message)}</pre>` : ""}
+      <details><summary class="small muted" style="cursor:pointer">Full test source (line ${tc.line ?? "?"})</summary><pre>${esc(tc.source || "")}</pre></details></div></details>`).join("")}
+    <details><summary class="small muted" style="cursor:pointer">pytest output</summary><pre>${esc(t.output)}</pre></details>`;
+}
+
+// ---------------------------------------------------------------- shared visuals
+let PLAYER = null, STOP_AT = null;
+function player(src, vtt) {
+  const v = document.createElement("video");
+  v.controls = true; v.preload = "metadata"; v.src = fileUrl(src); v.playsInline = true;
+  if (vtt) { const tr = document.createElement("track"); tr.kind = "captions"; tr.default = true; tr.src = fileUrl(vtt); tr.srclang = "en"; tr.label = "Transcript"; v.appendChild(tr); }
+  v.ontimeupdate = () => { if (STOP_AT != null && v.currentTime >= STOP_AT) { v.pause(); STOP_AT = null; } };
+  PLAYER = v; return v;
+}
+function seek(t, end) { if (!PLAYER) return; PLAYER.currentTime = Math.max(0, t); STOP_AT = end ?? null; PLAYER.play().catch(() => {}); PLAYER.scrollIntoView({block: "nearest", behavior: "smooth"}); }
+function withPlayer(el, src, vtt) {
+  el.innerHTML = `<div class="split"><div id="left"></div><div class="sticky" id="right"></div></div>`;
+  if (src) { $("#right", el).appendChild(player(src, vtt)); $("#right", el).insertAdjacentHTML("beforeend", `<div class="small muted" style="margin-top:4px">720p proxy · click charts/items to jump</div>`); }
+  return $("#left", el);
+}
+
+/** Canvas line/area chart. series: [{name, data, color, fill, step}], markers [{t,color,label}], bands [{s,e,color}] */
+function chart(parent, {title, t, series, markers = [], bands = [], height = 150, ymin = null, ymax = null, onClick = seek, bars = null}) {
+  const box = document.createElement("div"); box.className = "chartbox";
+  box.innerHTML = `<div class="legend"><b style="color:var(--text)">${esc(title)}</b>${series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join("")}</div>`;
+  const cv = document.createElement("canvas"); cv.className = "chart"; cv.style.height = height + "px"; box.appendChild(cv); parent.appendChild(box);
+  const all = series.flatMap(s => s.data).filter(Number.isFinite);
+  const lo = ymin ?? Math.min(0, ...all), hi = ymax ?? (Math.max(...all, lo + 1e-6));
+  const t0 = bars ? bars[0]?.s ?? 0 : t[0] ?? 0, t1 = bars ? (bars.at(-1)?.e ?? 1) : (t.at(-1) ?? 1);
+  const L = 38, R = 8, T = 6, B = 18;
+  let hover = null;
+  function draw() {
+    const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = height;
+    cv.width = W * dpr; cv.height = H * dpr; const g = cv.getContext("2d"); g.scale(dpr, dpr); g.clearRect(0, 0, W, H);
+    const X = x => L + (x - t0) / Math.max(1e-9, t1 - t0) * (W - L - R), Y = y => T + (1 - (y - lo) / Math.max(1e-9, hi - lo)) * (H - T - B);
+    g.font = "10px ui-monospace, Menlo, monospace"; g.fillStyle = css("--muted"); g.strokeStyle = css("--grid"); g.lineWidth = 1;
+    for (let i = 0; i <= 3; i++) { const v = lo + (hi - lo) * i / 3, y = Y(v); g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke(); g.fillText(Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2), 2, y + 3); }
+    for (let i = 0; i <= 5; i++) { const v = t0 + (t1 - t0) * i / 5; g.fillText(fmt(v), Math.min(W - 40, X(v) - 12), H - 4); }
+    bands.forEach(b => { g.fillStyle = b.color; g.fillRect(X(b.s), T, Math.max(1, X(b.e) - X(b.s)), H - T - B); });
+    if (bars) bars.forEach(b => { g.fillStyle = b.color || css("--c1"); const y = Y(b.v); g.fillRect(X(b.s) + 1, y, Math.max(1, X(b.e) - X(b.s) - 2), Y(lo) - y); });
+    series.forEach(s => {
+      g.strokeStyle = s.color; g.lineWidth = 1.4; g.beginPath();
+      s.data.forEach((v, i) => { const x = X(t[i]), y = Y(v); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+      if (s.fill) { g.lineTo(X(t.at(-1)), Y(Math.max(lo, 0))); g.lineTo(X(t[0]), Y(Math.max(lo, 0))); g.globalAlpha = .18; g.fillStyle = s.color; g.fill(); g.globalAlpha = 1; }
+    });
+    markers.forEach(m => { g.strokeStyle = m.color; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(X(m.t), T); g.lineTo(X(m.t), H - B); g.stroke(); g.setLineDash([]);
+      if (m.label) { g.fillStyle = m.color; g.fillText(m.label, X(m.t) + 3, T + 10); } });
+    if (hover != null) {
+      g.strokeStyle = css("--text"); g.globalAlpha = .4; g.beginPath(); g.moveTo(X(hover), T); g.lineTo(X(hover), H - B); g.stroke(); g.globalAlpha = 1;
+      let label = fmt(hover);
+      if (bars) { const b = bars.find(b => hover >= b.s && hover < b.e); if (b) label += `  ${b.v.toFixed(2)}${b.label ? " " + b.label : ""}`; }
+      else if (t.length) { let i = 0; while (i < t.length - 1 && t[i + 1] <= hover) i++; label += "  " + series.map(s => `${s.name}=${(+s.data[i]).toFixed(2)}`).join("  "); }
+      g.fillStyle = css("--text"); const tw = g.measureText(label).width; g.fillText(label, Math.min(X(hover) + 6, W - tw - 4), T + 22);
+    }
+  }
+  const tAt = e => { const r = cv.getBoundingClientRect(); return t0 + (e.clientX - r.left - L) / (r.width - L - R) * (t1 - t0); };
+  cv.onmousemove = e => { hover = tAt(e); draw(); }; cv.onmouseleave = () => { hover = null; draw(); };
+  cv.onclick = e => { const x = tAt(e); if (bars) { const b = bars.find(b => x >= b.s && x < b.e); b ? onClick(b.s, b.e) : onClick(x); } else onClick(x); };
+  new ResizeObserver(draw).observe(cv); draw();
+  return box;
+}
+function kv(obj) { return `<table class="kv card" style="padding:0">${Object.entries(obj).map(([k, v]) => `<tr><td>${esc(k)}</td><td style="word-break:break-all">${esc(v)}</td></tr>`).join("")}</table>`; }
+function h3(el, text, sub = "") { el.insertAdjacentHTML("beforeend", `<h3>${esc(text)}</h3>${sub ? `<div class="small muted" style="margin:-4px 0 8px">${sub}</div>` : ""}`); }
+
+// ---------------------------------------------------------------- per-module visuals
+const VIS = {
+  1(v, el) {
+    el.innerHTML = kv(v.meta || {});
+    h3(el, "Lossless chunks", "How the segmenter split the file (cut on keyframes, no re-encode). Width = duration.");
+    el.insertAdjacentHTML("beforeend", `<div class="chunks">${(v.chunks || []).map(c => `<div style="flex:${c.dur}" title="${c.mb} MB">#${c.i} · ${c.dur}s</div>`).join("")}</div>`);
+    h3(el, "URL → platform detection", "Pure logic check of how links are classified.");
+    el.insertAdjacentHTML("beforeend", `<div class="card" style="padding:0;overflow:auto"><table><tr><th>Input</th><th>Platform</th><th>Type</th></tr>${(v.urls || []).map(u => `<tr><td class="small" style="word-break:break-all">${esc(u.url)}</td><td>${esc(u.platform)}</td><td>${esc(u.type)}</td></tr>`).join("")}</table></div>`);
+  },
+  2(v, el) {
+    const left = withPlayer(el, v.proxy);
+    const w = v.waveform || {t: [], peak: [], rms: []};
+    chart(left, {title: "Waveform (16 kHz mono)", t: w.t, series: [{name: "peak", data: w.peak, color: css("--c1"), fill: true}, {name: "rms", data: w.rms, color: css("--c3")}], ymin: 0, ymax: 1});
+    h3(left, "Thumbnails", "Click to jump.");
+    left.insertAdjacentHTML("beforeend", `<div class="thumbs">${(v.thumbs || []).map(t => `<img loading="lazy" src="${fileUrl(t.src)}" data-t="${t.t}" title="${fmt(t.t)}">`).join("")}</div>`);
+    left.querySelectorAll(".thumbs img").forEach(i => i.onclick = () => seek(+i.dataset.t));
+    left.insertAdjacentHTML("beforeend", `<h3>Speech audio</h3><audio controls src="${fileUrl(v.wav)}" style="width:100%"></audio>`);
+  },
+  3(v, el) {
+    const left = withPlayer(el, v.proxy, v.vtt);
+    if (!v.real) left.insertAdjacentHTML("beforeend", `<div class="banner warn">MOCK transcript — no real speech-to-text was available, so these words are not from your video.</div>`);
+    left.insertAdjacentHTML("beforeend", `<div class="small muted" style="margin-bottom:6px">${esc(v.provider)} · ${v.words.length} words · ${v.pauses.length} pauses ≥300 ms · dotted = low confidence · click any word to jump, it lights up as the video plays</div>`);
+    const box = document.createElement("div"); box.className = "words";
+    box.innerHTML = v.words.map((w, i) => `<span data-i="${i}" class="${w.c < 0.6 ? "low" : ""}" title="${fmt(w.s)}–${fmt(w.e)} · conf ${w.c}">${esc(w.w)}</span>`).join(" ") || `<span class="muted">No speech detected.</span>`;
+    left.appendChild(box);
+    box.querySelectorAll("span[data-i]").forEach(s => s.onclick = () => seek(v.words[s.dataset.i].s));
+    let last = null;
+    PLAYER.addEventListener("timeupdate", () => {
+      const t = PLAYER.currentTime; const i = v.words.findIndex(w => t >= w.s && t <= w.e + 0.05);
+      if (i < 0 || i === last) return; last?.classList?.remove("now");
+      const s = box.querySelector(`[data-i="${i}"]`); if (s) { s.classList.add("now"); s.scrollIntoView({block: "nearest"}); last = s; }
+    });
+    const dur = Math.max(...v.words.map(w => w.e), 1);
+    chart(left, {title: "Speech activity & pauses", t: [0, dur], series: [], bands: [...v.segments.map(s => ({s: s.s, e: s.e, color: css("--accent-soft")})), ...v.pauses.map(p => ({s: p.s, e: p.e, color: css("--warn")}))], height: 60, ymin: 0, ymax: 1,
+      markers: v.snaps.flatMap(s => [{t: s.target, color: css("--muted"), label: "target"}, {t: s.start, color: css("--pass"), label: "start"}, {t: s.end, color: css("--fail"), label: "end"}])});
+    left.insertAdjacentHTML("beforeend", `<div class="small muted">Purple = speech segments · orange = pauses · dashed = boundary snapping test (target → snapped start/end)</div><h3>SRT export</h3><pre>${esc(v.srt || "(empty)")}</pre>`);
+  },
+  4(v, el) {
+    const left = withPlayer(el, v.proxy);
+    chart(left, {title: "Loudness (RMS) · shaded = speech/noise active", t: v.t, series: [{name: "rms", data: v.rms, color: css("--c1"), fill: true}],
+      bands: runs(v.t, v.speech).map(([s, e]) => ({s, e, color: css("--pass-soft")})), ymin: 0});
+    chart(left, {title: "Pitch (Hz, 0 = unvoiced)", t: v.t, series: [{name: "pitch", data: v.pitch, color: css("--c2")}], ymin: 0, height: 110});
+    chart(left, {title: "Shout / laugh / cheer probability", t: v.t, series: [{name: "event", data: v.event, color: css("--c4"), fill: true}], ymin: 0, ymax: 1, height: 90});
+    chart(left, {title: "S_energy per window (bar colour: red = lots of dead air) — click a bar to play it", t: [], series: [], ymin: 0, ymax: 1, height: 120,
+      bars: v.windows.map(w => ({s: w.s, e: w.e, v: w.energy, label: `dead ${(w.dead * 100).toFixed(0)}%`, color: w.dead > 0.4 ? css("--fail") : css("--c1")}))});
+  },
+  5(v, el) {
+    const left = withPlayer(el, v.proxy);
+    if (v.simulated) left.insertAdjacentHTML("beforeend", `<div class="banner warn">Simulated chat (no log uploaded). Bursts were placed ${v.lag}s after your loudest moments — upload a real chat log on the left to test with it.</div>`);
+    chart(left, {title: "Chat velocity (messages/sec, 5 s window)", t: v.rate_t, series: [{name: "msg/s", data: v.rate, color: css("--c2"), fill: true}, {name: "emotes/s", data: v.emote_rate, color: css("--c4")}], ymin: 0,
+      markers: v.bursts.map(b => ({t: b, color: css("--c3"), label: "event"})), onClick: t => seek(Math.max(0, t - v.lag))});
+    chart(left, {title: `S_chat per window (already shifted back ${v.lag}s for stream delay) — click to play`, t: [], series: [], ymin: 0, ymax: 1, height: 110,
+      bars: v.windows.map(w => ({s: w.s, e: w.e, v: w.score, label: w.clip ? "CLIP IT" : "", color: w.clip ? css("--c3") : css("--c2")}))});
+    h3(left, "Chat feed", "Click a message to play the moment it reacts to (timestamp − lag).");
+    left.insertAdjacentHTML("beforeend", `<div class="feed card">${v.messages.map(m => `<div data-t="${m.t}"><span class="muted small">${fmt(m.t)}</span> <b>${esc(m.a)}</b> ${esc(m.x)} ${m.e.length ? `<span class="pill info">${esc(m.e.join(" "))}</span>` : ""}</div>`).join("")}</div>`);
+    left.querySelectorAll(".feed [data-t]").forEach(d => d.onclick = () => seek(Math.max(0, +d.dataset.t - v.lag)));
+  },
+  6(v, el) {
+    const left = withPlayer(el, v.proxy);
+    h3(left, `Scene cuts (${v.cuts.length})`, "Frame just after each detected cut. Click to jump.");
+    left.insertAdjacentHTML("beforeend", v.cut_frames.length ? `<div class="frames">${v.cut_frames.map(f => `<figure><img src="${fileUrl(f.src)}" data-t="${f.t}"><figcaption>${fmt(f.t)} · score ${f.score}</figcaption></figure>`).join("")}</div>` : `<div class="muted">No hard cuts — continuous footage.</div>`);
+    h3(left, "Face detection on sampled frames", "Green box = detected face.");
+    left.insertAdjacentHTML("beforeend", `<div class="frames">${v.frames.map(f => `<figure><img src="${fileUrl(f.src)}" data-t="${f.t}"><figcaption>${fmt(f.t)} · ${f.face ? "face ✓" : "no face"}</figcaption></figure>`).join("")}</div>`);
+    left.querySelectorAll("img[data-t]").forEach(i => i.onclick = () => seek(+i.dataset.t));
+    if (v.track_t.length) chart(left, {title: "Virtual camera X: raw face centre vs deadband-smoothed", t: v.track_t,
+      series: [{name: "raw", data: v.raw_x, color: css("--c3")}, {name: "smoothed", data: v.smooth_x, color: css("--c1")}], ymin: 0, ymax: v.frame_w,
+      markers: v.cuts.map(c => ({t: c.t, color: css("--muted")}))});
+    const sc = 220 / Math.max(v.frame_w, v.frame_h), b = v.box;
+    left.insertAdjacentHTML("beforeend", `<h3>Layout: ${esc(v.layout)}</h3><div style="position:relative;width:${v.frame_w * sc}px;height:${v.frame_h * sc}px;background:var(--panel2);border:1px solid var(--line);border-radius:6px">
+      ${b ? `<div style="position:absolute;left:${b.x * sc}px;top:${b.y * sc}px;width:${b.width * sc}px;height:${b.height * sc}px;border:2px solid var(--pass);border-radius:3px"></div>` : ""}
+      <span class="small muted" style="position:absolute;bottom:4px;left:6px">${v.frame_w}×${v.frame_h}</span></div>`);
+  },
+  7(v, el) {
+    const left = withPlayer(el, v.proxy);
+    left.insertAdjacentHTML("beforeend", `<div class="small muted">Preset ${esc(v.preset)} · candidates on the timeline (click to play exactly that clip)</div>
+      <div class="timeline">${v.candidates.map((c, i) => `<div data-i="${i}" style="left:${100 * c.s / v.duration}%;width:${100 * (c.e - c.s) / v.duration}%;opacity:${0.35 + 0.6 * c.score / 100}">#${i + 1}</div>`).join("")}</div>`);
+    if (!v.candidates.length) left.insertAdjacentHTML("beforeend", `<div class="banner warn">No candidates — see the checks above for why.</div>`);
+    const comp = (name, val, color) => `<span>${name}</span><div class="bar"><div style="width:${Math.min(100, val * 100)}%;background:${color}"></div></div><span class="small">${val.toFixed(2)}</span>`;
+    left.insertAdjacentHTML("beforeend", v.candidates.map((c, i) => `<div class="cand"><div class="row"><span class="score">${c.score.toFixed(0)}</span>
+      <div style="flex:1;min-width:200px"><b>#${i + 1} ${esc(c.title)}</b><div class="small muted">${fmt(c.s)} → ${fmt(c.e)} · ${(c.e - c.s).toFixed(1)}s</div></div>
+      <button class="btn secondary" data-i="${i}">▶ Play clip</button></div>
+      <div class="small" style="margin:8px 0">${esc(c.reason)}</div>
+      ${c.source === "llm+signals" ? `<div class="small" style="margin:-4px 0 8px"><span class="pill info">picked by Claude</span> ${c.hook ? `hook: “${esc(c.hook)}”` : ""} ${(c.hashtags || []).map(h => `<span class="muted">#${esc(h)}</span>`).join(" ")}</div>` : ""}
+      <div class="comp">${c.source === "llm+signals" ? comp("claude", c.s_llm, css("--accent")) : ""}${comp("hook", c.s_hook, css("--c1"))}${comp("energy", c.s_energy, css("--c3"))}${comp("chat", c.s_chat, css("--c2"))}${comp("narrative", c.s_narrative, css("--c4"))}${comp("dead air", c.p_dead, css("--fail"))}</div>
+      ${c.snippet ? `<div class="small muted" style="margin-top:8px">“${esc(c.snippet)}”</div>` : ""}</div>`).join(""));
+    left.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const c = v.candidates[b.dataset.i]; seek(c.s, c.e); });
+  },
+  8(v, el) {
+    el.innerHTML = `<div class="small muted" style="margin-bottom:8px">Clip ${fmt(v.in_s)} → ${fmt(v.out_s)}. Captions shown via a browser track (CC button) — check the checks above to see whether they were also burned into the MP4.</div><div class="renders" id="rs"></div>`;
+    (v.renders || []).forEach(r => {
+      const card = document.createElement("div"); card.className = "card"; card.style.padding = "10px";
+      card.innerHTML = `<div class="row" style="margin-bottom:6px"><b>${esc(r.layout.toUpperCase())}</b><span class="muted small">${r.mb} MB</span><a class="small" style="margin-left:auto" href="${fileUrl(r.src)}" download>download</a></div>`;
+      card.prepend(); card.appendChild(player(r.src, r.vtt));
+      if (r.ass) card.insertAdjacentHTML("beforeend", `<details><summary class="small muted" style="cursor:pointer">ASS caption file</summary><pre>${esc(r.ass)}</pre></details>`);
+      $("#rs", el).appendChild(card);
+    });
+  },
+  9(v, el) {
+    el.innerHTML = `<div class="small muted">Asset ID for your file: <code>${esc(v.asset)}</code> · invite token <code>${esc(v.token)}</code></div>
+      <div class="card" style="padding:0;margin-top:10px"><table><tr><th>#</th><th>Step</th><th>Outcome</th><th>Reason</th></tr>
+      ${v.log.map((s, i) => `<tr><td class="muted">${i + 1}</td><td>${esc(s.step)}</td><td><span class="pill ${s.allowed ? "pass" : "fail"}">${s.allowed ? "allowed" : "denied"}</span></td><td class="small muted">${esc(s.detail)}</td></tr>`).join("")}</table></div>
+      <div class="small muted" style="margin-top:6px">"denied" is the expected outcome for the default-deny, tamper and revoke steps — the checks table above says whether each matched expectations.</div>`;
+  },
+  10(v, el) {
+    const left = withPlayer(el, v.clip);
+    left.innerHTML = `<div class="card" style="padding:0"><table><tr><th>Step</th><th>Platform said</th><th>Detail</th></tr>
+      ${v.rows.map(r => `<tr><td>${esc(r.step)}</td><td><span class="pill ${r.ok ? "pass" : "fail"}">${r.ok ? "ok" : "blocked"}</span></td><td class="small muted" style="word-break:break-all">${esc(r.detail)}</td></tr>`).join("")}</table></div>
+      <div class="small muted" style="margin-top:6px">YouTube/TikTok calls are simulated adapters (no real upload). "blocked" is correct for the no-rights step.</div>
+      <h3>Post text</h3><pre>${esc(v.title + "\n\n" + v.caption)}</pre>
+      ${v.zip ? `<a class="btn secondary" style="display:inline-block;text-decoration:none" href="${fileUrl(v.zip)}" download>⬇ Download export bundle (.zip)</a>` : ""}`;
+  },
+};
+function runs(t, flags) { const out = []; let s = null; flags.forEach((f, i) => { if (f && s == null) s = t[i]; if (!f && s != null) { out.push([s, t[i]]); s = null; } }); if (s != null) out.push([s, t.at(-1)]); return out; }
+
+boot().catch(e => { document.body.innerHTML = `<pre style="padding:20px">Failed to start: ${esc(e.message)}</pre>`; });
+</script>
+</body>
+</html>

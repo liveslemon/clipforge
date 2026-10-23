@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clipforge"
+version = "0.1.0"
+description = "AI Stream Clipping Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.31.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[project.optional-dependencies]
+lab = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "python-multipart>=0.0.9",
+    "python-dotenv>=1.0",
+    "anthropic>=1.16",                  # Claude: clip selection, titles, caption proofreading
+    "faster-whisper>=1.0",              # transcription fallback on non-Apple machines
+    "mlx-whisper>=0.4; sys_platform == 'darwin' and platform_machine == 'arm64'",  # GPU Whisper on Apple Silicon
+    "opencv-python>=4.8",               # YuNet face detection (FaceDetectorYN)
+    "scenedetect>=0.6",                 # PySceneDetect AdaptiveDetector
+    "panns-inference>=0.1.1",           # AudioSet audio-event model (laughter / cheering / screaming / music)
+    "librosa>=0.10",
+    "google-api-python-client>=2.100",  # YouTube Data API v3 uploads
+    "google-auth-oauthlib>=1.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["modules"]

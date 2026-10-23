@@ -1,0 +1,75 @@
+# Environment & Secrets (NEVER COMMIT)
+.env
+.env.*
+!.env.example
+.youtube_token.json
+
+# Python & Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# User Uploads & Processing Artifacts
+studio_uploads/*
+!studio_uploads/.gitkeep
+test_lab/runs/*
+!test_lab/runs/.gitkeep
+demo_output/*
+!demo_output/.gitkeep
+
+# Auto-downloaded Models
+models/*
+!models/.gitkeep
+
+# Media Files (Prevent large binary commits)
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.flv
+*.ts
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.aac
+
+# macOS & Editor Metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
